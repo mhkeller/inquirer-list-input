@@ -5,7 +5,7 @@
 var util = require('util')
 var chalk = require('chalk')
 var figures = require('figures')
-// var cliCursor = require("cli-cursor");
+var cliCursor = require("cli-cursor");
 var Base = require('inquirer/lib/prompts/base')
 var Choices = require('inquirer/lib/objects/choices')
 var observe = require('inquirer/lib/utils/events')
@@ -13,6 +13,7 @@ var utils = require('inquirer/lib/utils/readline')
 var Paginator = require('inquirer/lib/utils/paginator')
 var readline = require('readline')
 var _ = require('lodash')
+var fs = require('fs')
 
 /**
  * Module exports
@@ -76,7 +77,7 @@ Prompt.prototype._run = function( cb ) {
   validation.error.forEach( this.onError.bind(this) );
 
   // Init the prompt
-  // cliCursor.hide();
+  cliCursor.hide();
   this.render();
 
   return this;
@@ -107,10 +108,12 @@ Prompt.prototype.render = function(error ) {
     }
     // figure out if this is from line or input to display properly
   } else {
-    var choicesStr = listRender(this.opt.choices, this.selected );
+    var choicesStr = listRender(this.opt.choices, this.selected, this.mode);
     message += this.rl.line + "\n" + this.paginator.paginate(choicesStr, this.selected, this.opt.pageSize);
     // cursor = this.rl.line.length
   }
+
+  cursor = cursor + message.split('\n').length - 1;
 
   if (error) {
     message += '\n' + chalk.red('>> ') + error;
@@ -148,6 +151,7 @@ Prompt.prototype.onEnd = function( state ) {
     this.render();
 
     this.screen.done();
+
     this.done( state.value );
   }.bind(this));
 };
@@ -160,6 +164,7 @@ Prompt.prototype.onError = function( state ) {
  * When user press a key
  */
 Prompt.prototype.onUpKey = function(e) {
+  cliCursor.hide();
   if (e.key.name === 'j' || e.key.name === 'k'){
     return false;
   }
@@ -173,9 +178,11 @@ Prompt.prototype.onUpKey = function(e) {
 };
 
 Prompt.prototype.onDownKey = function(e) {
+  cliCursor.hide();
   if (e.key.name === 'j' || e.key.name === 'k'){
     return false;
   }
+  readline.moveCursor(this.rl.output, -2, 0)
   this.mode = 'list';
   this.initialState = false;
   var len = this.opt.choices.realLength;
@@ -193,6 +200,7 @@ Prompt.prototype.onKeypress = function(e) {
   this.initialState = false;
   var keyName = (e.key && e.key.name)
   if (keyName !== 'down' && keyName !== 'up' && keyName !== 'left' && keyName !== 'right') {
+    cliCursor.show();
     if (this.mode == 'list') {
       this.rl.line = e.key.name
       this.mode = 'input';
@@ -209,7 +217,7 @@ Prompt.prototype.onKeypress = function(e) {
  * @param  {Number} pointer Position of the pointer
  * @return {String}         Rendered content
  */
- function listRender(choices, pointer) {
+ function listRender(choices, pointer, mode) {
   var output = '';
   var separatorOffset = 0;
 
@@ -223,7 +231,8 @@ Prompt.prototype.onKeypress = function(e) {
     var isSelected = (i - separatorOffset === pointer);
     var line = (isSelected ? figures.pointer + ' ' : '  ') + choice.name;
     if (isSelected) {
-      line = chalk.cyan(line);
+      var color = (mode === 'list') ? 'cyan' : 'gray'
+      line = chalk[color](line);
     }
     output += line + ' \n';
   });
