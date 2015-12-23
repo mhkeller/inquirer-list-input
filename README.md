@@ -1,9 +1,15 @@
-Inquirer list input prompt
-==========================
+Inquirer list input
+===================
 
-> List prompt with arbitrary text input for [Inquirer](https://github.com/SBoudrias/Inquirer.js)
+> A list prompt with arbitrary text input for [Inquirer](https://github.com/SBoudrias/Inquirer.js)
 
 This prompt style gives you a list but also allows arbitrary user input. This could allow for slight editing of list items such as when selecting file paths and you want further sub-directories.
+
+## Install
+
+```
+npm save --install inquirer-list-input
+```
 
 ## Usage
 
@@ -45,4 +51,4 @@ inquirer.prompt([{
 });
 ```
 
-*Inspired by [inquirer-autocomplete-prompt](https://github.com/mokkabonna/inquirer-autocomplete-prompt/blob/master/README.md)
+_Inspired by [inquirer-autocomplete-prompt](https://github.com/mokkabonna/inquirer-autocomplete-prompt/blob/master/README.md)_

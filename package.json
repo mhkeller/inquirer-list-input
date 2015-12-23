@@ -1,7 +1,7 @@
 {
-  "name": "inquirer-list-input-prompt",
+  "name": "inquirer-list-input",
   "version": "0.1.0",
-  "description": "List prompt plus arbitrary text input for inquirer.",
+  "description": "A list prompt plus arbitrary text input for inquirer.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
