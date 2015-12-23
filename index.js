@@ -5,7 +5,7 @@
 var util = require('util')
 var chalk = require('chalk')
 var figures = require('figures')
-var cliCursor = require("cli-cursor");
+// var cliCursor = require("cli-cursor");
 var Base = require('inquirer/lib/prompts/base')
 var Choices = require('inquirer/lib/objects/choices')
 var observe = require('inquirer/lib/utils/events')
@@ -76,7 +76,7 @@ Prompt.prototype._run = function( cb ) {
   validation.error.forEach( this.onError.bind(this) );
 
   // Init the prompt
-  cliCursor.hide();
+  // cliCursor.hide();
   this.render();
 
   return this;
@@ -109,6 +109,7 @@ Prompt.prototype.render = function(error ) {
   } else {
     var choicesStr = listRender(this.opt.choices, this.selected );
     message += this.rl.line + "\n" + this.paginator.paginate(choicesStr, this.selected, this.opt.pageSize);
+    // cursor = this.rl.line.length
   }
 
   if (error) {
@@ -158,7 +159,10 @@ Prompt.prototype.onError = function( state ) {
 /**
  * When user press a key
  */
-Prompt.prototype.onUpKey = function() {
+Prompt.prototype.onUpKey = function(e) {
+  if (e.key.name === 'j' || e.key.name === 'k'){
+    return false;
+  }
   this.mode = 'list';
   this.initialState = false;
   var len = this.opt.choices.realLength;
@@ -168,7 +172,10 @@ Prompt.prototype.onUpKey = function() {
   this.render();
 };
 
-Prompt.prototype.onDownKey = function() {
+Prompt.prototype.onDownKey = function(e) {
+  if (e.key.name === 'j' || e.key.name === 'k'){
+    return false;
+  }
   this.mode = 'list';
   this.initialState = false;
   var len = this.opt.choices.realLength;
@@ -185,7 +192,7 @@ Prompt.prototype.onDownKey = function() {
 Prompt.prototype.onKeypress = function(e) {
   this.initialState = false;
   var keyName = (e.key && e.key.name)
-  if (keyName !== 'down' && keyName !== 'up') {
+  if (keyName !== 'down' && keyName !== 'up' && keyName !== 'left' && keyName !== 'right') {
     if (this.mode == 'list') {
       this.rl.line = e.key.name
       this.mode = 'input';
