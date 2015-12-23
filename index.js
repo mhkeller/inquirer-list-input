@@ -13,7 +13,6 @@ var utils = require('inquirer/lib/utils/readline')
 var Paginator = require('inquirer/lib/utils/paginator')
 var readline = require('readline')
 var _ = require('lodash')
-
 /**
  * Module exports
  */
@@ -36,6 +35,7 @@ function Prompt() {
   this.selected = 0;
   this.mode = 'list';
   this.initialState = true;
+  this.helpText = "(Use arrow keys)";
 
   var def = this.opt.default;
 
@@ -76,9 +76,7 @@ Prompt.prototype._run = function( cb ) {
   validation.error.forEach( this.onError.bind(this) );
 
   // Init the prompt
-  if (!this.opt.editableList) {
-    cliCursor.hide();
-  }
+  cliCursor.hide();
   this.render();
 
   return this;
@@ -97,7 +95,7 @@ Prompt.prototype.render = function(error ) {
   var message = this.getQuestion();
 
   if ( this.firstRender ) {
-    message += chalk.dim( "(Use arrow keys)" );
+    message += chalk.dim( this.helpText );
   }
 
   // Render choices or answer depending on the state
@@ -154,6 +152,7 @@ Prompt.prototype.onEnd = function( state ) {
     this.screen.done();
 
     this.done( state.value );
+    this.initialState = true;
   }.bind(this));
 };
 
@@ -165,7 +164,9 @@ Prompt.prototype.onError = function( state ) {
  * When user press a key
  */
 Prompt.prototype.onUpKey = function(e) {
-  if (!this.opt.editableList) {
+  if (this.opt.editableList) {
+    cliCursor.show();
+  } else {
     cliCursor.hide();
   }
   if (e.key.name === 'j' || e.key.name === 'k'){
@@ -181,7 +182,9 @@ Prompt.prototype.onUpKey = function(e) {
 };
 
 Prompt.prototype.onDownKey = function(e) {
-  if (!this.opt.editableList) {
+  if (this.opt.editableList) {
+    cliCursor.show();
+  } else {
     cliCursor.hide();
   }
   if (e.key.name === 'j' || e.key.name === 'k'){
@@ -201,12 +204,9 @@ Prompt.prototype.onDownKey = function(e) {
  */
 
 Prompt.prototype.onKeypress = function(e) {
-  this.initialState = false;
   var keyName = (e.key && e.key.name)
   if (keyName !== 'down' && keyName !== 'up') {
-    if (!this.opt.editableList) {
-      cliCursor.show();
-    }
+    cliCursor.show();
     if (this.mode == 'list') {
       this.mode = 'input';
       var ctrl = e.ctrl || e.key.ctrl
@@ -217,6 +217,12 @@ Prompt.prototype.onKeypress = function(e) {
       }
     } 
     this.render(); //render input automatically
+    if (this.initialState){
+      this.rl.output.unmute()
+      utils.left(this.rl, this.helpText.length )
+      this.rl.output.mute()
+      this.initialState = false;
+    }
   } else {
     return false;
   }

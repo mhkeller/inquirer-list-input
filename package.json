@@ -1,5 +1,5 @@
 {
-  "name": "inquirer-list-input",
+  "name": "inquirer-list-input-prompt",
   "version": "0.1.0",
   "description": "List prompt plus arbitrary text input for inquirer.",
   "main": "index.js",

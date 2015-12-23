@@ -1,7 +1,9 @@
-Inquirer list input
-===================
+Inquirer list input prompt
+==========================
 
 > List prompt with arbitrary text input for [Inquirer](https://github.com/SBoudrias/Inquirer.js)
+
+This prompt style gives you a list but also allows arbitrary user input. This could allow for slight editing of list items such as when selecting file paths and you want further sub-directories.
 
 ## Usage
 
@@ -15,9 +17,19 @@ inquirer.prompt({
 })
 ```
 
+### Options
+
+> **Note:** _allowed options written inside square brackets (`[]`) are optional. Others are required._
+
+`type`, `name`, `message`, `editableList`[, `filter`, `validate`, `when`]
+
+See [inquirer](https://github.com/SBoudrias/Inquirer.js) readme for meaning of all except **source**.
+
+**editableList** is a Boolean, defaulting to `false`. If `true`, the cursor will always appear, giving the user a greater visual cue to edit list items.
+
 ## Example
 
-See [example.js](example.js) for a working example.
+See [example.js](example.js) for a working example. Use the left and right arrows to edit a list item or <kbd>ctrl</kbd> <kbd>a</kbd> and <kbd>ctrl</kbd> <kbd>e</kbd> to jump to the beginning or end of a line.
 
 ```js
 var inquirer = require('inquirer');
@@ -32,3 +44,5 @@ inquirer.prompt([{
   console.log(JSON.stringify(answers, null, 2));
 });
 ```
+
+*Inspired by [inquirer-autocomplete-prompt](https://github.com/mokkabonna/inquirer-autocomplete-prompt/blob/master/README.md)
