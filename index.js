@@ -77,7 +77,9 @@ Prompt.prototype._run = function( cb ) {
   validation.error.forEach( this.onError.bind(this) );
 
   // Init the prompt
-  cliCursor.hide();
+  if (!this.opt.editableList) {
+    cliCursor.hide();
+  }
   this.render();
 
   return this;
@@ -110,15 +112,16 @@ Prompt.prototype.render = function(error ) {
   } else {
     var choicesStr = listRender(this.opt.choices, this.selected, this.mode);
     message += this.rl.line + "\n" + this.paginator.paginate(choicesStr, this.selected, this.opt.pageSize);
-    // cursor = this.rl.line.length
   }
-
-  cursor = cursor + message.split('\n').length - 1;
 
   if (error) {
     message += '\n' + chalk.red('>> ') + error;
     cursor++;
   }
+  // Move cursor to the first line
+  // if (this.opt.editableList){
+    cursor = cursor + message.split('\n').length - 1;
+  // }
 
   this.firstRender = false;
 
@@ -164,7 +167,9 @@ Prompt.prototype.onError = function( state ) {
  * When user press a key
  */
 Prompt.prototype.onUpKey = function(e) {
-  cliCursor.hide();
+  if (!this.opt.editableList) {
+    cliCursor.hide();
+  }
   if (e.key.name === 'j' || e.key.name === 'k'){
     return false;
   }
@@ -178,11 +183,12 @@ Prompt.prototype.onUpKey = function(e) {
 };
 
 Prompt.prototype.onDownKey = function(e) {
-  cliCursor.hide();
+  if (!this.opt.editableList) {
+    cliCursor.hide();
+  }
   if (e.key.name === 'j' || e.key.name === 'k'){
     return false;
   }
-  readline.moveCursor(this.rl.output, -2, 0)
   this.mode = 'list';
   this.initialState = false;
   var len = this.opt.choices.realLength;
@@ -199,11 +205,18 @@ Prompt.prototype.onDownKey = function(e) {
 Prompt.prototype.onKeypress = function(e) {
   this.initialState = false;
   var keyName = (e.key && e.key.name)
-  if (keyName !== 'down' && keyName !== 'up' && keyName !== 'left' && keyName !== 'right') {
-    cliCursor.show();
+  if (keyName !== 'down' && keyName !== 'up') {
+    if (!this.opt.editableList) {
+      cliCursor.show();
+    }
     if (this.mode == 'list') {
-      this.rl.line = e.key.name
       this.mode = 'input';
+      var ctrl = e.ctrl || e.key.ctrl
+      if ((keyName !== 'left' && keyName !== 'right' && keyName !== 'backspace' && keyName !== 'tab' && ctrl === false)) {
+        this.rl.line = e.key.name
+      } else if (keyName === 'tab') {
+        return false
+      }
     } 
     this.render(); //render input automatically
   } else {
