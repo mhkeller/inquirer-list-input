@@ -14,7 +14,6 @@ var Paginator = require('inquirer/lib/utils/paginator')
 var readline = require('readline')
 var _ = require('lodash')
 
-
 /**
  * Module exports
  */
@@ -35,6 +34,8 @@ function Prompt() {
 
   this.firstRender = true;
   this.selected = 0;
+  this.mode = 'list';
+  this.initialState = true;
 
   var def = this.opt.default;
 
@@ -68,8 +69,11 @@ Prompt.prototype._run = function( cb ) {
   var events = observe(this.rl);
   events.normalizedUpKey.takeUntil( events.line ).forEach( this.onUpKey.bind(this) );
   events.normalizedDownKey.takeUntil( events.line ).forEach( this.onDownKey.bind(this) );
-  events.numberKey.takeUntil( events.line ).forEach( this.onNumberKey.bind(this) );
-  events.line.take(1).forEach( this.onSubmit.bind(this) );
+  var submit = events.line.map( this.filterInput.bind(this) );
+  var validation = this.handleSubmitEvents( submit );
+  events.keypress.takeUntil( validation.success ).forEach( this.onKeypress.bind(this) );
+  validation.success.forEach( this.onEnd.bind(this) );
+  validation.error.forEach( this.onError.bind(this) );
 
   // Init the prompt
   cliCursor.hide();
@@ -84,7 +88,9 @@ Prompt.prototype._run = function( cb ) {
  * @return {Prompt} self
  */
 
-Prompt.prototype.render = function() {
+Prompt.prototype.render = function(error ) {
+  var cursor = 0 
+
   // Render question
   var message = this.getQuestion();
 
@@ -94,15 +100,25 @@ Prompt.prototype.render = function() {
 
   // Render choices or answer depending on the state
   if ( this.status === "answered" ) {
-    message += chalk.cyan( this.opt.choices.getChoice(this.selected).short );
+    if (this.mode == 'list') {
+      message += chalk.cyan( this.opt.choices.getChoice(this.selected).short );
+    } else if (this.mode == 'input') {
+      message += chalk.cyan( this.rl.line );
+    }
+    // figure out if this is from line or input to display properly
   } else {
     var choicesStr = listRender(this.opt.choices, this.selected );
-    message += "\n" + this.paginator.paginate(choicesStr, this.selected, this.opt.pageSize);
+    message += this.rl.line + "\n" + this.paginator.paginate(choicesStr, this.selected, this.opt.pageSize);
+  }
+
+  if (error) {
+    message += '\n' + chalk.red('>> ') + error;
+    cursor++;
   }
 
   this.firstRender = false;
 
-  this.screen.render(message);
+  this.screen.render(message, {cursor: cursor});
 };
 
 
@@ -110,39 +126,74 @@ Prompt.prototype.render = function() {
  * When user press `enter` key
  */
 
-Prompt.prototype.onSubmit = function() {
-  var choice = this.opt.choices.getChoice( this.selected );
-  this.status = "answered";
-
-  // Rerender prompt
-  this.render();
-
-  this.screen.done();
-  cliCursor.show();
-  this.done( choice.value );
+Prompt.prototype.filterInput = function( input ) {
+  if ( !input ) {
+    return this.opt.default != null ? this.opt.default : "";
+  }
+  return input;
 };
 
+Prompt.prototype.onEnd = function( state ) {
+  if (this.initialState) {
+    state.value = this.opt.choices.getChoice( 0 ).value;
+  }
+  this.filter( state.value, function( filteredValue ) {
+    this.answer = filteredValue;
+    this.status = "answered";
+
+    this.rl.line = filteredValue;
+
+    // Re-render prompt
+    this.render();
+
+    this.screen.done();
+    this.done( state.value );
+  }.bind(this));
+};
+
+Prompt.prototype.onError = function( state ) {
+  this.render(state.isValid);
+};
 
 /**
  * When user press a key
  */
 Prompt.prototype.onUpKey = function() {
+  this.mode = 'list';
+  this.initialState = false;
   var len = this.opt.choices.realLength;
   this.selected = (this.selected > 0) ? this.selected - 1 : len - 1;
+  var choice = this.opt.choices.getChoice( this.selected );
+  this.rl.line = choice.name;
   this.render();
 };
 
 Prompt.prototype.onDownKey = function() {
+  this.mode = 'list';
+  this.initialState = false;
   var len = this.opt.choices.realLength;
   this.selected = (this.selected < len - 1) ? this.selected + 1 : 0;
+  var choice = this.opt.choices.getChoice( this.selected );
+  this.rl.line = choice.name;
   this.render();
 };
 
-Prompt.prototype.onNumberKey = function( input ) {
-  if ( input <= this.opt.choices.realLength ) {
-    this.selected = input - 1;
+/**
+ * When user press a key
+ */
+
+Prompt.prototype.onKeypress = function(e) {
+  this.initialState = false;
+  var keyName = (e.key && e.key.name)
+  if (keyName !== 'down' && keyName !== 'up') {
+    if (this.mode == 'list') {
+      this.rl.line = e.key.name
+      this.mode = 'input';
+    } 
+    this.render(); //render input automatically
+  } else {
+    return false;
   }
-  this.render();
 };
 
 
