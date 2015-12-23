@@ -13,7 +13,7 @@ inquirer.prompt({
   type: 'list-input',
   // ...
 })
-``
+```
 
 ## Example
 
