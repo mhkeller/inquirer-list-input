@@ -103,7 +103,7 @@ Prompt.prototype.render = function(error ) {
     if (this.mode == 'list') {
       message += chalk.cyan( this.opt.choices.getChoice(this.selected).short );
     } else if (this.mode == 'input') {
-      message += chalk.cyan( this.rl.line );
+      message += chalk.cyan( this.rl.line || this.answer );
     }
     // figure out if this is from line or input to display properly
   } else {
@@ -143,8 +143,6 @@ Prompt.prototype.onEnd = function( state ) {
   this.filter( state.value, function( filteredValue ) {
     this.answer = filteredValue;
     this.status = "answered";
-
-    this.rl.line = filteredValue;
 
     // Re-render prompt
     this.render();
