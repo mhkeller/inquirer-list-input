@@ -75,6 +75,12 @@ inquirer.prompt([{
   message: 'Select a state to travel from',
   editableList: false,
   choices: states
+},{
+  type: 'list-input',
+  name: 'to',
+  message: 'Select a state to travel to',
+  editableList: true,
+  choices: states
 }], function(answers) {
   console.log(JSON.stringify(answers, null, 2));
 });

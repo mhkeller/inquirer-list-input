@@ -13,7 +13,6 @@ var utils = require('inquirer/lib/utils/readline')
 var Paginator = require('inquirer/lib/utils/paginator')
 var readline = require('readline')
 var _ = require('lodash')
-var fs = require('fs')
 
 /**
  * Module exports
@@ -111,7 +110,8 @@ Prompt.prototype.render = function(error ) {
     // figure out if this is from line or input to display properly
   } else {
     var choicesStr = listRender(this.opt.choices, this.selected, this.mode);
-    message += this.rl.line + "\n" + this.paginator.paginate(choicesStr, this.selected, this.opt.pageSize);
+    var manual_entry = (this.firstRender) ? '' : this.rl.line
+    message += manual_entry + "\n" + this.paginator.paginate(choicesStr, this.selected, this.opt.pageSize);
   }
 
   if (error) {
@@ -119,9 +119,7 @@ Prompt.prototype.render = function(error ) {
     cursor++;
   }
   // Move cursor to the first line
-  // if (this.opt.editableList){
-    cursor = cursor + message.split('\n').length - 1;
-  // }
+  cursor = cursor + message.split('\n').length - 1;
 
   this.firstRender = false;
 
