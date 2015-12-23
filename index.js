@@ -35,7 +35,7 @@ function Prompt() {
   this.selected = 0;
   this.mode = 'list';
   this.initialState = true;
-  this.helpText = "(Use arrow keys)";
+  this.helpText = "(Use arrows or type)";
 
   var def = this.opt.default;
 
@@ -76,7 +76,7 @@ Prompt.prototype._run = function( cb ) {
   validation.error.forEach( this.onError.bind(this) );
 
   // Init the prompt
-  cliCursor.hide();
+  // cliCursor.hide();
   this.render();
 
   return this;
@@ -151,6 +151,7 @@ Prompt.prototype.onEnd = function( state ) {
 
     this.done( state.value );
     this.initialState = true;
+    cliCursor.show();
   }.bind(this));
 };
 
