@@ -3,6 +3,8 @@ Inquirer list input
 
 > A list prompt with arbitrary text input for [Inquirer](https://github.com/SBoudrias/Inquirer.js)
 
+[![npm](https://img.shields.io/npm/dm/inquirer-list-input.svg)](https://www.npmjs.com/package/inquirer-list-input)
+
 This prompt style gives you a list but also allows arbitrary user input. This could allow for slight editing of list items such as when selecting file paths and you want further sub-directories.
 
 ## Install
