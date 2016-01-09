@@ -10,7 +10,7 @@ This prompt style gives you a list but also allows arbitrary user input. This co
 ## Install
 
 ```
-npm save --install inquirer-list-input
+npm install --save inquirer-list-input
 ```
 
 ## Usage
